@@ -5,7 +5,7 @@ from wp.api import Wordpress
 import wpconfig
 
 api = Wordpress(wpconfig.url, wpconfig.user, wpconfig.password)
-catalog = "shirts"
+catalog = wpconfig.catalog_dir
 
 
 #
@@ -19,17 +19,20 @@ catalog = "shirts"
 
 
 for root, dirs, filenames in os.walk(catalog):
+	for dirn in dirs:
+		print "Found design folder: " + dirn
+
 	for entry in filenames:
 		filename = root + "/" + entry
-		print "Inspecting " + filename
 		if(entry == "meta.json"):
 			file = open(filename,'r')
 			data = file.read()
 			meta = json.loads(data);
 			if(meta['slug']):
+				print "Operating on " + filename
 				api.publish_design(meta)
 			else:
-				print "No slug defined in meta.json"
+				print "No slug defined in meta.json for " + filename
 
 
 	

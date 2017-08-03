@@ -18,25 +18,24 @@ class Wordpress(object):
 
 	def publish_design(self,meta):
 		slug = meta['slug']
-		print "Attempt Publish for design: " + slug
 		r = self.product_by_slug(slug)
 		if(r.status_code == 200):
-			#product exists, update
-			print "\tUPdating existing: " + slug
 			existing_product = r.json()
-			#pprint(existing_product)
-			#pprint(meta)
-			new_payload = self.apply_meta_to_wp_object(meta,existing_product[0])
-			#print merged
-			if(meta['updates'] > 0):
-				print "\tPUTing " + str(meta['updates']) + " changes to website"
-				self.update_product(new_payload)
+			if len(existing_product) > 0:
+				print "\tExists, check for updates"
+				pprint(existing_product)
+				#pprint(meta)
+				new_payload = self.apply_meta_to_wp_object(meta,existing_product[0])
+				#print merged
+				if(meta['updates'] > 0):
+					print "\tPUTing " + str(meta['updates']) + " changes to website"
+					self.update_product(new_payload)
+				else:
+					print "\tNo changes to merge, skipping"
+				
 			else:
-				print "\tNo changes to merge, skipping"
-			
-		else:
-			#publish new product.
-			print "\tPublishing new design: " + slug
+				#publish new product.
+				print "\tPublishing new design: " + slug
 
 	def apply_meta_to_wp_object(self,meta,wp_object):
 		updates = 0
@@ -83,8 +82,7 @@ class Wordpress(object):
 	def update_product(self, payload):
 		path = "products/" + str(payload['id'])
 		r = self.post(path,payload)
-		print r.status_code
-		print r.text
+		print "\tResult: " + str(r.status_code)
 
 	def products(self,search=""):
 		path = "products"
@@ -99,11 +97,10 @@ class Wordpress(object):
 
 	def get(self,path):
 		r = requests.get(self.url + self.api_prefix + path, auth=self.auth)
-		print "Response returned: " + str(r.status_code)
+		#print "Response returned: " + str(r.status_code)
 		return r
 
 	def post(self,path,data):
-
-		r = requests.post(self.url + self.api_prefix + path, auth=self.auth, data=data)
-		print "Response returned: " + str(r.status_code)
+		r = requests.post(self.url + self.api_prefix + path, auth=self.auth, json=data)
+		#print "Response returned: " + str(r.status_code)
 		return r
