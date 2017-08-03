@@ -23,13 +23,10 @@ class Wordpress(object):
 			existing_product = r.json()
 			if len(existing_product) > 0:
 				print "\tExists, check for updates"
-				pprint(existing_product)
-				#pprint(meta)
-				new_payload = self.apply_meta_to_wp_object(meta,existing_product[0])
-				#print merged
+				design_patch = self.create_patch(meta,existing_product[0])
 				if(meta['updates'] > 0):
 					print "\tPUTing " + str(meta['updates']) + " changes to website"
-					self.update_product(new_payload)
+					self.update_product(design_patch)
 				else:
 					print "\tNo changes to merge, skipping"
 				
@@ -37,7 +34,7 @@ class Wordpress(object):
 				#publish new product.
 				print "\tPublishing new design: " + slug
 
-	def apply_meta_to_wp_object(self,meta,wp_object):
+	def create_patch(self,meta,wp_object):
 		updates = 0
 		payload={}
 		payload['id']=wp_object['id']
