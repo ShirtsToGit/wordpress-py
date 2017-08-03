@@ -52,6 +52,14 @@ class Wordpress(object):
 			print "\tto: " + meta['description']
 			payload['acf']['description'] = meta['description']
 			updates = updates + 1
+		if( 'attribution' not in wp_object['acf']):
+			wp_object['acf']['attribution'] = ""
+		proper_attribution = self.build_attribution_html(meta['attributions'])
+		if( wp_object['acf']['attribution'] != proper_attribution):
+			print "\tChanging attribution from: " + wp_object['acf']['attribution']
+			print "\tto: " + proper_attribution
+			payload['acf']['attribution'] = proper_attribution
+			updates = updates + 1
 		if( 'charity_name' not in wp_object['acf']):
 			wp_object['acf']['charity_name'] = ""
 		if( wp_object['acf']['charity_name'] != meta['charity']['name']):
@@ -75,6 +83,26 @@ class Wordpress(object):
 			updates = updates + 1
 		meta['updates'] = updates
 		return payload
+
+
+	def build_attribution_html(self,attributions):
+		html_credits=[]
+		for credit in attributions:
+			html=credit['type']
+			if('name' in credit):	
+				if "image_link" in credit:
+					html+=' <a href="' + credit['image_link'] + '">' + credit['name'] + '</a>'
+				else:
+					html+=" " + credit['name']
+			if( "author" in credit):
+				html+=' by <a href="' + credit['author_link'] + '">' + credit['author'] + '</a>.'
+			if("license" in credit):
+				if "license_link" in credit:
+					html+=' License: <a href="' + credit['license_link'] + '">' + credit['license'] + '</a>'
+				else:
+					html+=" License: " + credit['license']
+			html_credits.append(html)
+		return '<br/>'.join(html_credits)
 
 	def update_product(self, payload):
 		path = "products/" + str(payload['id'])
