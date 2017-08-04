@@ -4,8 +4,9 @@ import requests
 
 """
 TODO
-- Models
-- 
+- Check store for matching URL (should be in MAIN not here...)
+- Publish Image
+- Adding new designs
 """
 
 
@@ -81,6 +82,12 @@ class Wordpress(object):
 			print "\tto: " + meta['charity']['link']
 			payload['acf']['charity_link'] = meta['charity']['link']
 			updates = updates + 1
+		if( set(wp_object['product_tag_names']) != set(meta['tags']) ):
+			print "\tChanging tags from: " + str(wp_object['product_tag_names'])
+			print "\tto: " + str(meta['tags'])
+			payload['product_tag_names'] = meta['tags']
+			updates = updates + 1
+
 		meta['updates'] = updates
 		return payload
 
