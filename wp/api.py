@@ -36,28 +36,28 @@ class Wordpress(object):
 
 	def create_patch(self,meta,wp_object):
 		updates = 0
-		payload={}
+		payload={"content":""} #omitting this and WP decides to add "rendered", their API is such a joke
 		payload['id']=wp_object['id']
 		payload['acf']={}
 
-		if(wp_object['title']['rendered'] != meta['title']):
+		if(wp_object['title']['raw'] != meta['title']):
 			print "\tChanging title from:\t" + wp_object['title']['rendered']
 			print "\t\t\tto:\t" + meta['title']
 			payload['title'] = meta['title']
 			updates = updates + 1
 		if( 'description' not in wp_object['acf']):
 			wp_object['acf']['description'] = ""
-		if( wp_object['acf']['description'] != meta['description']):
-			print "\tChanging description from: " + wp_object['acf']['description']
-			print "\tto: " + meta['description']
+		if( wp_object['acf']['description'] != '<p>' + self.html_escape(meta['description']) + '</p>\n'):
+			print "\tChanging description from: " + repr(wp_object['acf']['description'])
+			print "\tto: " + repr(self.html_escape(meta['description']))
 			payload['acf']['description'] = meta['description']
 			updates = updates + 1
 		if( 'attribution' not in wp_object['acf']):
 			wp_object['acf']['attribution'] = ""
 		proper_attribution = self.build_attribution_html(meta['attributions'])
-		if( wp_object['acf']['attribution'] != proper_attribution):
-			print "\tChanging attribution from: " + wp_object['acf']['attribution']
-			print "\tto: " + proper_attribution
+		if( wp_object['acf']['attribution'] != proper_attribution + "\n"): # wp or acf plugin adds newline on response string
+			print "\tChanging attribution from: " + repr(wp_object['acf']['attribution']) 
+			print "\tto: " + repr(proper_attribution)
 			payload['acf']['attribution'] = proper_attribution
 			updates = updates + 1
 		if( 'charity_name' not in wp_object['acf']):
@@ -102,7 +102,7 @@ class Wordpress(object):
 				else:
 					html+=" License: " + credit['license']
 			html_credits.append(html)
-		return '<br/>'.join(html_credits)
+		return '<p>' + '<br />'.join(html_credits) + '</p>'
 
 	def update_product(self, payload):
 		path = "products/" + str(payload['id'])
@@ -116,7 +116,7 @@ class Wordpress(object):
 		return self.get(path)
 
 	def product_by_slug(self,slug):
-		path =  "products?slug=" + slug
+		path =  "products?slug=" + slug + "&context=edit"
 		return self.get(path)
 
 
@@ -129,3 +129,20 @@ class Wordpress(object):
 		r = requests.post(self.url + self.api_prefix + path, auth=self.auth, json=data)
 		#print "Response returned: " + str(r.status_code)
 		return r
+
+
+
+
+
+
+
+	def html_escape(self,text):
+	    """Produce entities within text."""
+	    html_escape_table = {
+			"&": "&amp;",
+			'"': "&quot;",
+			"'": "&#8217;",
+			">": "&gt;",
+			"<": "&lt;",
+			}
+	    return "".join(html_escape_table.get(c,c) for c in text)
