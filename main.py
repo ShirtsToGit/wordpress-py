@@ -32,7 +32,7 @@ for root, dirs, filenames  in os.walk(catalog):
 					data = file.read()
 					meta = json.loads(data);
 					helpers.check_slug_validity(meta,dir__)
-					api.publish_design(meta)
+					api.publish_design(meta,design)
 	break #dont repeat this loop for subfolders, we handled aboce.
 
 	
