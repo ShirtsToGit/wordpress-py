@@ -23,4 +23,8 @@ def check_store_exists(meta):
 	store_url = wpconfig.store_prefix + slug
 	response = requests.get(store_url)
 	if response.status_code != 200:
-		raise Exception("Slug not found in store: " + store_url)
+		raise ValidationException("Slug not found in store: " + store_url)
+
+
+class ValidationException(Exception):
+	pass

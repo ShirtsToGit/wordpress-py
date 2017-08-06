@@ -27,7 +27,7 @@ class Wordpress(object):
 		if(r.status_code == 200):
 			existing_product = r.json()
 			meta['updates'] = 0
-			payload={"content":""} #omitting this and WP decides to add "rendered", their API is such a joke
+			payload={"content":"","acf":{}} #omitting this and WP decides to add "rendered", their API is such a joke
 			if len(existing_product) > 0:
 				wp_object = existing_product[0]
 				print "\tExists, check for updates"
@@ -43,15 +43,14 @@ class Wordpress(object):
 			else:
 				#publish new product.
 				print "\tPublishing new design: " + slug
-				empty_product={}
-				upload_image(meta, payload,design_path)
+				empty_product={"title":{"raw":""},"product_tag_names":[],"acf":{}}
+				self.upload_image(meta,payload,design_path)
 				self.create_product_payload(meta,empty_product,payload)
 				self.create_product(payload)
 
 	def create_product_payload(self,meta,wp_object,payload):
-		payload['acf']={}
 		if(wp_object['title']['raw'] != meta['title']):
-			print "\tChanging title from:\t" + wp_object['title']['rendered']
+			print "\tChanging title from:\t" + wp_object['title']['raw']
 			print "\t\t\tto:\t" + meta['title']
 			payload['title'] = meta['title']
 			meta['updates']+=1
@@ -91,9 +90,8 @@ class Wordpress(object):
 			print "\tto: " + meta['charity']['link']
 			payload['acf']['charity_link'] = meta['charity']['link']
 			meta['updates']+=1
-		if ("store_slug" in meta) and (wp_object['acf']['store_slug'] != meta['store_slug']):
-			print "\tChanging storeslug from: " + wp_object['acf']['store_slug']
-			print "\tto: " + meta['store_slug']
+		if ("store_slug" in meta) and ("store_slug" not in wp_object or wp_object['acf']['store_slug'] != meta['store_slug']):
+			print "\tChanging storeslug to: " + meta['store_slug']
 			payload['acf']['store_slug'] = meta['store_slug']
 			meta['updates']+=1
 		if( set(wp_object['product_tag_names']) != set(meta['tags']) ):
@@ -125,25 +123,31 @@ class Wordpress(object):
 	'''
 	Upload image if different, and flag payload for updates
 	'''
-	def ensure_latest_image(self,meta,design_path,existing_product,updated_payload):
+
+
+	def image_path(self,design_path,meta):
 		image_name = meta['design_print']
 		if "sample_image" in meta:
 			image_name = meta['sample_image']
 		image_path = design_path + "/" + image_name
+		return image_path
+
+	def ensure_latest_image(self,meta,design_path,existing_product,updated_payload):
 		if "design_image" in existing_product['acf']:
-			if self.image_hash_equal(image_path,existing_product['acf']['design_image']['url']):
+			if self.image_hash_equal(self.image_path(design_path,meta),existing_product['acf']['design_image']['url']):
 				# no changes needed
 				return
 		print "\tDesign image missing or altered."
-		upload_image(meta,updated_payload,design_path)
+		self.upload_image(meta,updated_payload,design_path)
 
-	def upload_image(self,meta,payload,design_path):
+	def upload_image(self,meta,updated_payload,design_path):
 		headers ={
-			'Content-Disposition' :  'attachment;filename=' + meta['slug'] + '-' + image_name,
+			'Content-Disposition' :  'attachment;filename=' + meta['slug'] + ".png",
 			'Content-Type' : 'image/png'
 			}
 		full_path = self.url + self.api_prefix + "media/"
-		print "\tUploading" + image_path + " to " + full_path
+		image_path = self.image_path(design_path,meta)
+		print "\tUploading " + image_path + " to " + full_path
 		with open(image_path,'rb') as f:
 			response = requests.post(full_path, auth=self.auth, headers=headers, data=f)
 		uploaded_media_id = response.json()['id']

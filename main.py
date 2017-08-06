@@ -34,7 +34,7 @@ for root, dirs, filenames  in os.walk(catalog):
 					try:
 						validator.validate(meta,dir__)
 						api.publish_design(meta,design)
-					except Exception as e:
+					except validator.ValidationException as e:
 						print "\t" + str(e)
 					
 	break #dont repeat this loop for subfolders, we handled aboce.
