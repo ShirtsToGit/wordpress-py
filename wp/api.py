@@ -46,7 +46,7 @@ class Wordpress(object):
 				empty_product={}
 				upload_image(meta, payload,design_path)
 				self.create_product_payload(meta,empty_product,payload)
-				self.update_product(payload)
+				self.create_product(payload)
 
 	def create_product_payload(self,meta,wp_object,payload):
 		payload['acf']={}
@@ -160,6 +160,11 @@ class Wordpress(object):
 
 	def update_product(self, payload):
 		path = "products/" + str(payload['id'])
+		r = self.post_json(path,payload)
+		print "\tResult: " + str(r.status_code)
+
+	def create_product(self, payload):
+		path = "products/" 
 		r = self.post_json(path,payload)
 		print "\tResult: " + str(r.status_code)
 
