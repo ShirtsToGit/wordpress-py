@@ -7,8 +7,6 @@ from io import BytesIO
 
 """
 TODO
-- Check store for matching URL (should be in MAIN not here...)
-- Adding new designs
 - Styles (and prices)
 - use git hash for design versioing saved as ACF & storeslug
 """
@@ -27,7 +25,7 @@ class Wordpress(object):
 		if(r.status_code == 200):
 			existing_product = r.json()
 			meta['updates'] = 0
-			payload={"content":"","acf":{}} #omitting this and WP decides to add "rendered", their API is such a joke
+			payload={"slug":slug,"content":"","acf":{},"status":"publish"} #omitting this and WP decides to add "rendered", their API is such a joke
 			if len(existing_product) > 0:
 				wp_object = existing_product[0]
 				print "\tExists, check for updates"
@@ -99,6 +97,22 @@ class Wordpress(object):
 			print "\tto: " + str(meta['tags'])
 			payload['product_tag_names'] = meta['tags']
 			meta['updates']+=1
+		self.update_styles(wp_object,meta,payload)
+
+	def update_styles(self,wp_object,meta,payload):
+		target_styles=[]
+		for style in meta['styles']:
+			target_styles.append(style['name'])
+			price_field = style['name']+ '_price'
+			if price_field not in wp_object['acf'] or wp_object['acf'][price_field] != style['price']:
+				print "\tSetting new price for " + price_field + " to " + style['price']
+				meta['updates'] += 1
+				payload['acf'][price_field] = style['price']
+		# its possible we removed a style, and price of remainv is same
+		if "styles" not in wp_object['acf'] or target_styles != wp_object['acf']['styles']:
+				print "\tUpdating styles to: " + str(target_styles)
+				meta['updates'] += 1
+				payload['acf']['styles'] = target_styles
 
 
 	def build_attribution_html(self,attributions):
@@ -142,7 +156,7 @@ class Wordpress(object):
 
 	def upload_image(self,meta,updated_payload,design_path):
 		headers ={
-			'Content-Disposition' :  'attachment;filename=' + meta['slug'] + ".png",
+			'Content-Disposition' :  'attachment;filename=' + meta['slug'] + "image.png",
 			'Content-Type' : 'image/png'
 			}
 		full_path = self.url + self.api_prefix + "media/"
@@ -171,6 +185,7 @@ class Wordpress(object):
 		path = "products/" 
 		r = self.post_json(path,payload)
 		print "\tResult: " + str(r.status_code)
+		print repr(r.json())
 
 	def products(self,search=""):
 		path = "products"
