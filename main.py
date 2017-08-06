@@ -3,7 +3,7 @@ import os
 import simplejson as json
 from wp.api import Wordpress
 import wpconfig
-import helpers
+import validator
 
 api = Wordpress(wpconfig.url, wpconfig.user, wpconfig.password)
 catalog = wpconfig.catalog_dir
@@ -31,8 +31,12 @@ for root, dirs, filenames  in os.walk(catalog):
 					file = open(filename,'r')
 					data = file.read()
 					meta = json.loads(data);
-					helpers.check_slug_validity(meta,dir__)
-					api.publish_design(meta,design)
+					try:
+						validator.validate(meta,dir__)
+						api.publish_design(meta,design)
+					except Exception as e:
+						print "\t" + str(e)
+					
 	break #dont repeat this loop for subfolders, we handled aboce.
 
 	
