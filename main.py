@@ -2,10 +2,10 @@
 import os
 import simplejson as json
 from wp.api import Wordpress
-import wpconfig
+import test_config as wpconfig
 import validator
 
-api = Wordpress(wpconfig.url, wpconfig.user, wpconfig.password)
+api = Wordpress(wpconfig)
 catalog = wpconfig.catalog_dir
 
 

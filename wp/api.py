@@ -4,20 +4,20 @@ import requests
 import imagehash
 from PIL import Image
 from io import BytesIO
+from decimal import *
 
 """
 TODO
-- Styles (and prices)
 - use git hash for design versioing saved as ACF & storeslug
 """
 
 
 class Wordpress(object):
-	def __init__(self,url,usern,passw):
-		self.auth = (usern,passw)
-		self.url  = url
+	def __init__(self,wpconfig):
+		self.auth = (wpconfig.user,wpconfig.password)
+		self.config = wpconfig
 		self.api_prefix = "/wp-json/wp/v2/"
-		print "API initialized to website: " + url
+		print "API initialized to website: " + wpconfig.url
 
 	def publish_design(self,meta,design_path):
 		slug = meta['slug']
@@ -88,7 +88,7 @@ class Wordpress(object):
 			print "\tto: " + meta['charity']['link']
 			payload['acf']['charity_link'] = meta['charity']['link']
 			meta['updates']+=1
-		if ("store_slug" in meta) and ("store_slug" not in wp_object or wp_object['acf']['store_slug'] != meta['store_slug']):
+		if ("store_slug" in meta) and ("store_slug" not in wp_object['acf'] or wp_object['acf']['store_slug'] != meta['store_slug']):
 			print "\tChanging storeslug to: " + meta['store_slug']
 			payload['acf']['store_slug'] = meta['store_slug']
 			meta['updates']+=1
@@ -97,14 +97,21 @@ class Wordpress(object):
 			print "\tto: " + str(meta['tags'])
 			payload['product_tag_names'] = meta['tags']
 			meta['updates']+=1
+		if( "repo_url" not in wp_object['acf'] or wp_object['acf']['repo_url'] != self.build_repo_url(meta['slug']) ):
+			print "\tChanging repo to: " + self.build_repo_url(meta['slug'])
+			payload['acf']['repo_url'] = self.build_repo_url(meta['slug'])
+			meta['updates']+=1
 		self.update_styles(wp_object,meta,payload)
+
+	def build_repo_url(self,slug):
+		return self.config.repo_prefix + slug
 
 	def update_styles(self,wp_object,meta,payload):
 		target_styles=[]
 		for style in meta['styles']:
 			target_styles.append(style['name'])
 			price_field = style['name']+ '_price'
-			if price_field not in wp_object['acf'] or wp_object['acf'][price_field] != style['price']:
+			if price_field not in wp_object['acf'] or Decimal(wp_object['acf'][price_field]) != Decimal(style['price']):
 				print "\tSetting new price for " + price_field + " to " + style['price']
 				meta['updates'] += 1
 				payload['acf'][price_field] = style['price']
@@ -159,7 +166,7 @@ class Wordpress(object):
 			'Content-Disposition' :  'attachment;filename=' + meta['slug'] + "image.png",
 			'Content-Type' : 'image/png'
 			}
-		full_path = self.url + self.api_prefix + "media/"
+		full_path = self.config.url + self.api_prefix + "media/"
 		image_path = self.image_path(design_path,meta)
 		print "\tUploading " + image_path + " to " + full_path
 		with open(image_path,'rb') as f:
@@ -199,12 +206,12 @@ class Wordpress(object):
 
 
 	def get(self,path):
-		r = requests.get(self.url + self.api_prefix + path, auth=self.auth)
+		r = requests.get(self.config.url + self.api_prefix + path, auth=self.auth)
 		#print "Response returned: " + str(r.status_code)
 		return r
 
 	def post_json(self,path,data):
-		r = requests.post(self.url + self.api_prefix + path, auth=self.auth, json=data)
+		r = requests.post(self.config.url + self.api_prefix + path, auth=self.auth, json=data)
 		#print "Response returned: " + str(r.status_code)
 		return r
 
