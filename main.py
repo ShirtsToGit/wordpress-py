@@ -39,7 +39,7 @@ for root, dirs, filenames  in os.walk(catalog):
 					data = file.read()
 					meta = json.loads(data);
 					try:
-						validator.validate(meta,dir__)
+						validator.validate(meta,dir__,wpconfig.store_prefix)
 						api.publish_design(meta,design)
 					except validator.ValidationException as e:
 						print "\t" + str(e)

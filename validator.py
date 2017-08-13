@@ -1,10 +1,10 @@
-import requests			
-import wpconfig
+import requests		
 
 
-def validate(meta,path):
+def validate(meta,path,store_prefix):
 	check_slug_validity(meta,path)
-	check_store_exists(meta)
+	store_url=store_prefix + meta['prefix']
+	check_store_exists(meta,store_url)
 
 
 
@@ -16,11 +16,10 @@ def check_slug_validity(meta,path):
 	else:
 		raise Exception("No slug defined")
 	
-def check_store_exists(meta):
+def check_store_exists(meta,store_url):
 	slug = meta['slug']
 	if "store_slug" in meta:
 		slug = meta['store_slug']
-	store_url = wpconfig.store_prefix + slug
 	response = requests.get(store_url)
 	if response.status_code != 200:
 		raise ValidationException("Slug not found in store: " + store_url)
