@@ -12,6 +12,7 @@ if len(sys.argv) != 2:
 
 wpconfig.init(sys.argv[1])
 print "URL: " + wpconfig.url 
+print "Catlog: " + wpconfig.catalog_dir 
 api = Wordpress(wpconfig)
 catalog = wpconfig.catalog_dir
 
@@ -23,7 +24,7 @@ catalog = wpconfig.catalog_dir
 #  Depensing on host, (if using CGI) youll need to add https://github.com/georgestephanis/application-passwords/wiki/Basic-Authorization-Header----Missing
 #
 #
-
+designs=0
 for root, dirs, filenames  in os.walk(catalog):
 	print "Inspecting catalog path: " + root
 	for dir__ in dirs:
@@ -41,9 +42,12 @@ for root, dirs, filenames  in os.walk(catalog):
 					try:
 						validator.validate(meta,dir__,wpconfig.store_prefix)
 						api.publish_design(meta,design)
+						designs+=1
 					except validator.ValidationException as e:
 						print "\t" + str(e)
 					
 	break #dont repeat this loop for subfolders, we handled aboce.
 
-	
+if designs < 1:
+	print "ERROR: No designs published/present"
+	exit(2)
