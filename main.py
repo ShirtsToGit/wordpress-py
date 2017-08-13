@@ -1,10 +1,17 @@
 #! /usr/bin/env python
 import os
+import sys
 import simplejson as json
 from wp.api import Wordpress
-import test_config as wpconfig
+import environment as wpconfig
 import validator
 
+if len(sys.argv) != 2:
+	print "Usage:\n\t" + sys.argv[0] + " <env_name>"
+	exit()
+
+wpconfig.init(sys.argv[1])
+print "URL: " + wpconfig.url 
 api = Wordpress(wpconfig)
 catalog = wpconfig.catalog_dir
 
