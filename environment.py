@@ -12,7 +12,7 @@ def init(environment_name):
 	global catalog_dir
 	global repo_prefix
 
-	catalog_dir="catalog_dir"
+	catalog_dir="shirts"
 	repo_prefix="https://github.com/ShirtsToGit/catalog/tree/master/shirts/"
 	store_prefix="https://teespring.com/"
 
