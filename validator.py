@@ -3,7 +3,7 @@ import requests
 
 def validate(meta,path,store_prefix):
 	check_slug_validity(meta,path)
-	store_url=store_prefix + meta['slug']
+	store_url=store_prefix + meta['store_slug']
 	check_store_exists(meta,store_url)
 
 
