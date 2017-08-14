@@ -9,7 +9,7 @@ import validator
 if len(sys.argv) != 2:
 	print "Usage:\n\t" + sys.argv[0] + " <env_name>"
 	exit()
-else
+else:
 	env_name = sys.argv[1]
 
 wpconfig.init(env_name)
