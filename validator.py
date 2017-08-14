@@ -1,12 +1,15 @@
 import requests		
 
 
-def validate(meta,path,store_prefix):
+def validate(meta,path,store_prefix,env_name):
 	check_slug_validity(meta,path)
 	store_url=store_prefix + meta['slug']
 	if "store_slug" in meta:
 		store_url=store_prefix + meta['store_slug']
-	check_store_exists(meta,store_url)
+	if env_name == "prod":
+		check_store_exists(meta,store_url)
+	else:
+		print "\tWARNGING: Non Prod, not checking for valid store URL"
 
 
 

@@ -9,8 +9,10 @@ import validator
 if len(sys.argv) != 2:
 	print "Usage:\n\t" + sys.argv[0] + " <env_name>"
 	exit()
+else
+	env_name = sys.argv[1]
 
-wpconfig.init(sys.argv[1])
+wpconfig.init(env_name)
 print "URL: " + wpconfig.url 
 print "Catlog: " + wpconfig.catalog_dir 
 api = Wordpress(wpconfig)
@@ -40,7 +42,7 @@ for root, dirs, filenames  in os.walk(catalog):
 					data = file.read()
 					meta = json.loads(data);
 					try:
-						validator.validate(meta,dir__,wpconfig.store_prefix)
+						validator.validate(meta,dir__,wpconfig.store_prefix,env_name)
 						api.publish_design(meta,design)
 						designs+=1
 					except validator.ValidationException as e:
