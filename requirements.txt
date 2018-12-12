@@ -10,4 +10,4 @@ requests==2.18.3
 scipy==0.19.1
 simplejson==3.11.1
 six==1.10.0
-urllib3==1.22
+urllib3==1.23
