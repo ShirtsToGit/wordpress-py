@@ -4,7 +4,7 @@ idna==2.5
 ImageHash==3.4
 numpy==1.13.1
 olefile==0.44
-Pillow==4.2.1
+Pillow==9.0.1
 PyWavelets==0.5.2
 requests>=2.20.0
 scipy==0.19.1
